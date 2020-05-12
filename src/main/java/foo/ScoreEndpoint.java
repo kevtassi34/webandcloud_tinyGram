@@ -202,7 +202,7 @@ public class ScoreEndpoint {
 		e.setProperty("owner", user.getEmail());
 		e.setProperty("url", pm.url);
 		e.setProperty("body", pm.body);
-		e.setProperty("likec", 0);
+		e.setProperty("likec", 11);
 		e.setProperty("date", new Date());
 
 ///		Solution pour pas projeter les listes

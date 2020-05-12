@@ -19,8 +19,28 @@
 <script src="https://unpkg.com/mithril/mithril.js"></script>
 
 
+  <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+	
+<title>TinyGram</title>
+
+<!-- Bootstrap core CSS -->
+  <link href="startbootstrap-one-page-wonder-gh-pages/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Custom fonts for this template -->
+  <link href="https://fonts.googleapis.com/css?family=Catamaran:100,200,300,400,500,600,700,800,900" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Lato:100,100i,300,300i,400,400i,700,700i,900,900i" rel="stylesheet">
+
+  <!-- Custom styles for this template -->
+  <link href="startbootstrap-one-page-wonder-gh-pages/css/one-page-wonder.min.css" rel="stylesheet">
+
 </head>
+
 <body>
+
 	<script>
 	
 var Profile={
@@ -30,7 +50,31 @@ var Profile={
   url:"",
   nextToken:"",
   list:[],
+  
   view: function(){
+// 	return  m('nav', {class :'navbar navbar-expand-lg navbar-dark navbar-custom fixed-top'}, [
+// 	m('div', {class:'container'},[
+//  		m('a', {class:"navbar-brand", href:"#"}, "TinyGram"),
+//  		m("button", {class:"navbar-toggler"},
+//  				[
+// 					m("span", {class:"navbar-toggler-icon"})
+// 				], "bonjoour"),
+//  		m('div', {class:"collapse navbar-collapse", id:"navbarResponsive"}, [
+//  		m('ul', {class:"navbar-nav ml-auto"}, [
+//  			m('li', {class:"nav-item"}, [
+// 			   m('a', {class:"nav-link", href:"#"}, "Sing up")
+//  			   ]),
+//  		    m('li', {class:"nav-item"}, [
+// 			   m('a', {class:"nav-link", href:"#"}, "Log In")
+//  				   ]),
+//  		]),
+			
+//  		])	,	
+					
+//  		])	,
+		
+// 	]),
+	
 	return m('div', {class:'container'}, [
   	  m("h1", {class: 'title'}, "name:"+Profile.name),
 	  m("h2", {class: 'subtitle'}, "email:"+Profile.email),
@@ -40,6 +84,7 @@ var Profile={
 	  m("div",m(PostView,{profile: Profile}))
 	])
   },
+  
   loadList: function() {
       return m.request({
           method: "GET",
@@ -54,6 +99,7 @@ var Profile={
           	Profile.nextToken=""
           }})
   },
+  
   next: function() {
       return m.request({
           method: "GET",
@@ -85,12 +131,21 @@ var Profile={
 	 			console.log("post_message:",result)
 	 			Profile.loadList()
     	 	})
-	}
+	},
+	
+  	deletePost: function(e){
+  		 var url = "/deletepost/" + e
+  		 window.location = url;
+  	 } 
+	
 }
+
+
 
 var PostView = {
 		  view: function(vnode) {
 		   	return m('div', [
+		   		
 			  m('div',{class:'subtitle'},"My Posts"),
 			  m('table', {class:'table is-striped',"table":"is-striped"},[
 			    m('tr', [
@@ -105,9 +160,15 @@ var PostView = {
 		            m("td", m("button", {onclick: function(e) {
 						console.log("like:"+item.key.id)
 		                 }},"like")),
-		                 m("td", m("button", {onclick: function(e) {
-		     				console.log("del:"+item.key.id)
-		                 }},"del")),
+		                 
+		             m("td", m('button',{
+		                  class: 'button is-danger',
+		                   onclick: function(e) {
+		                   Profile.deletePost(item.key.id);
+		         			 console.log("del:"+item.key.id)
+		                    	 }
+		                    },"Supprimer ce post")),
+		                 
 			        m('td', m('label', item.properties.body)),
 			        m('td', m('img', {class: 'is-rounded', 'src': item.properties.url})),
 			        m('td', m('label', item.properties.likec)),
@@ -120,7 +181,9 @@ var PostView = {
 				      },
 				  "Next"),
 			   ])
-			 ])
+			 
+			   
+			   ])
 		  }
 		}
 

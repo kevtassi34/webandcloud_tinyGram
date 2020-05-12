@@ -36,9 +36,10 @@ import javax.servlet.http.HttpServletResponse;
 )
 public class UsersServlet extends HttpServlet {
 
+	 UserService userService = UserServiceFactory.getUserService();
  @Override
  public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-   UserService userService = UserServiceFactory.getUserService();
+  
 
    String thisUrl = req.getRequestURI();
 
@@ -57,5 +58,11 @@ public class UsersServlet extends HttpServlet {
              "<p>Please <a href=\"" + userService.createLoginURL(thisUrl) + "\">sign in</a>.</p>");
    }
  }
+ 
+ public String getNicknameUser() {
+		return userService.getCurrentUser().getNickname().toString();
+	}
+ 
+ 
 }
 //[END users_API_example]

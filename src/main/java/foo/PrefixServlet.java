@@ -84,7 +84,7 @@ public class PrefixServlet extends HttpServlet {
 				e.setProperty("likec",like.size());
 				
 				datastore.put(e);
-				response.getWriter().print("<li> created post:" + e.getKey() + "<br>" + toset + "<br>");
+				response.getWriter().print("<li> created post instagram:" + e.getKey() + "<br>" + toset + "<br>");
 			}
 
 		}
