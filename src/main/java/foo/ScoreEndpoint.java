@@ -1,5 +1,6 @@
 package foo;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -56,58 +57,17 @@ public class ScoreEndpoint {
 		return new RandomResult(r.nextInt(6) + 1);
 	}
 
-	@ApiMethod(name = "scores", httpMethod = HttpMethod.GET)
-	public List<Entity> scores() {
-		Query q = new Query("Score").addSort("score", SortDirection.DESCENDING);
 
-		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-		PreparedQuery pq = datastore.prepare(q);
-		List<Entity> result = pq.asList(FetchOptions.Builder.withLimit(100));
-		return result;
-	}
-
-	@ApiMethod(name = "topscores", httpMethod = HttpMethod.GET)
-	public List<Entity> topscores() {
-		Query q = new Query("Score").addSort("score", SortDirection.DESCENDING);
-
-		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-		PreparedQuery pq = datastore.prepare(q);
-		List<Entity> result = pq.asList(FetchOptions.Builder.withLimit(10));
-		return result;
-	}
-
-	@ApiMethod(name = "myscores", httpMethod = HttpMethod.GET)
-	public List<Entity> myscores(@Named("name") String name) {
-		Query q = new Query("Score").setFilter(new FilterPredicate("name", FilterOperator.EQUAL, name)).addSort("score",
-				SortDirection.DESCENDING);
-
-		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-		PreparedQuery pq = datastore.prepare(q);
-		List<Entity> result = pq.asList(FetchOptions.Builder.withLimit(10));
-		return result;
-	}
-
-	@ApiMethod(name = "addScore", httpMethod = HttpMethod.GET)
-	public Entity addScore(@Named("score") int score, @Named("name") String name) {
-
-		Entity e = new Entity("Score", "" + name + score);
-		e.setProperty("name", name);
-		e.setProperty("score", score);
-
-		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-		datastore.put(e);
-
-		return e;
-	}
-
-	@ApiMethod(name = "postMessage", httpMethod = HttpMethod.POST)
-	public Entity postMessage(PostMessage pm) {
-
-		Entity e = new Entity("Post");
-		e.setProperty("owner", pm.owner);
-		e.setProperty("url", pm.url);
+	
+	@ApiMethod(name = "userConnected", httpMethod = HttpMethod.POST)
+	public Entity userconnected(PostMessage pm) {
+		
+		foo.UsersServlet connect = new foo.UsersServlet();
+		String user = connect.getNicknameUser();
+		Entity e = new Entity("UsersConnected");
+		
+		e.setProperty("userconnected", user);
 		e.setProperty("body", pm.body);
-		e.setProperty("likec", 0);
 		e.setProperty("date", new Date());
 
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
@@ -116,20 +76,14 @@ public class ScoreEndpoint {
 		txn.commit();
 		return e;
 	}
+	
+	
+	@ApiMethod(name = "userC", httpMethod = HttpMethod.GET)
+	public CollectionResponse<Entity> userC(@Nullable @Named("next") String cursorString) {
+		                                    //@Named("name") String name,
+	    //Query q = new Query("Post").setFilter(new FilterPredicate("owner", FilterOperator.EQUAL, name));
+	    Query q = new Query("UsersConnected");
 
-	@ApiMethod(name = "mypost", httpMethod = HttpMethod.GET)
-	public CollectionResponse<Entity> mypost(@Named("name") String name, @Nullable @Named("next") String cursorString) {
-
-	    Query q = new Query("Post").setFilter(new FilterPredicate("owner", FilterOperator.EQUAL, name));
-
-	    // https://cloud.google.com/appengine/docs/standard/python/datastore/projectionqueries#Indexes_for_projections
-	    //q.addProjection(new PropertyProjection("body", String.class));
-	    //q.addProjection(new PropertyProjection("date", java.util.Date.class));
-	    //q.addProjection(new PropertyProjection("likec", Integer.class));
-	    //q.addProjection(new PropertyProjection("url", String.class));
-
-	    // looks like a good idea but...
-	    // q.addSort("date", SortDirection.DESCENDING);
 	    
 	    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 	    PreparedQuery pq = datastore.prepare(q);
@@ -146,7 +100,217 @@ public class ScoreEndpoint {
 	    return CollectionResponse.<Entity>builder().setItems(results).setNextPageToken(cursorString).build();
 	    
 	}
+	
+	
+	@ApiMethod(name = "postComment", httpMethod = HttpMethod.POST)
+	public Entity postComment(PostComment pc) {
+		
+		HashSet<String> likeur = new HashSet<String>();
+		
+		foo.UsersServlet connect = new foo.UsersServlet();
+		String user = connect.getNicknameUser();
+		HashSet<String> commentaires = new HashSet<String>();
+		//Long NbFollowers = (long) 0;
+		//commentaires.add(pm.body);
+		
+		Entity e = new Entity("Comment");
+		commentaires.add("Commentaire de " + user + " : " + pc.body);
+	
+		e.setProperty("owner", user);
+		e.setProperty("body", commentaires);
+		e.setProperty("date", new Date());
+		
+
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Transaction txn = datastore.beginTransaction();
+		datastore.put(e);
+		txn.commit();
+		return e;
+	}
+	
+	
+	
+	@ApiMethod(name = "postMessage", httpMethod = HttpMethod.POST)
+	public Entity postMessage(PostMessage pm) {
+		
+		HashSet<String> likeur = new HashSet<String>();
+		
+		foo.UsersServlet connect = new foo.UsersServlet();
+		String user = connect.getNicknameUser();
+		HashSet<String> commentaires = new HashSet<String>();
+		//Long NbFollowers = (long) 0;
+		//commentaires.add(pm.body);
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		
+		Query q = new Query("Friend").setFilter(new FilterPredicate("lastName", FilterOperator.EQUAL, user));
+		
+		
+		PreparedQuery pq = datastore.prepare(q);
+		List<Entity> result = pq.asList(FetchOptions.Builder.withDefaults());
+		Long idPost = Long.MAX_VALUE-(new Date()).getTime();
+		
+		Entity e = new Entity("Post", idPost);
+		
+		for (Entity entity : result) {
+		
+			@SuppressWarnings("unchecked")
+			ArrayList<String> Followers = (ArrayList<String>) entity.getProperty("Followers");
+			
+			commentaires.add("Commentaire de " + user + " : " + pm.body);
+			e.setProperty("idPost", idPost);
+			e.setProperty("owner", user);
+			e.setProperty("url", pm.url);
+			e.setProperty("body", "Commentaire de " + user + " : " + pm.body);
+			e.setProperty("comments", commentaires);
+			e.setProperty("likeur", likeur);
+			e.setProperty("likec", 0);
+			e.setProperty("date", new Date());
+			e.setProperty("NbFollowers", Followers.size());
+			e.setProperty("Followers", Followers);
+	     }
+		//DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Transaction txn = datastore.beginTransaction();
+		datastore.put(e);
+		txn.commit();
+		return e;
+	}
+
+	
+	
+	@ApiMethod(name = "myprofile", httpMethod = HttpMethod.GET)
+	public CollectionResponse<Entity> myprofile(@Nullable @Named("next") String cursorString) {
+		                                    //@Named("name") String name,
+	    //Query q = new Query("Post").setFilter(new FilterPredicate("owner", FilterOperator.EQUAL, name));
+		foo.UsersServlet connect = new foo.UsersServlet();
+		String user = connect.getNicknameUser();
+		
+		Query q = new Query("Post").setFilter(new FilterPredicate("owner", FilterOperator.EQUAL, user));
+
+	    
+	    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+	    PreparedQuery pq = datastore.prepare(q);
+	    
+	    FetchOptions fetchOptions = FetchOptions.Builder.withLimit(30);
+	    //FetchOptions fetchOptions = FetchOptions.Builder.withDefaults();
+	    
+	    if (cursorString != null) {
+		fetchOptions.startCursor(Cursor.fromWebSafeString(cursorString));
+		}
+	    
+	    QueryResultList<Entity> results = pq.asQueryResultList(fetchOptions);
+	    cursorString = results.getCursor().toWebSafeString();
+	    
+	    return CollectionResponse.<Entity>builder().setItems(results).setNextPageToken(cursorString).build();
+	    
+	}
+	
+	
+	
+	@ApiMethod(name = "mypost", httpMethod = HttpMethod.GET)
+	public CollectionResponse<Entity> mypost(@Nullable @Named("next") String cursorString) {
+		                                    //@Named("name") String name,
+	    //Query q = new Query("Post").setFilter(new FilterPredicate("owner", FilterOperator.EQUAL, name));
+	   //Query q = new Query("Post");
+	    
+		foo.UsersServlet connect = new foo.UsersServlet();
+		String user = connect.getNicknameUser();
+		Query q = new Query("Post").setFilter(new FilterPredicate("Followers", FilterOperator.EQUAL, user));
+	    
+	    
+	    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+	    PreparedQuery pq = datastore.prepare(q);
+	    
+	    FetchOptions fetchOptions = FetchOptions.Builder.withLimit(30);
+	    //FetchOptions fetchOptions = FetchOptions.Builder.withDefaults();
+	    
+	    if (cursorString != null) {
+		fetchOptions.startCursor(Cursor.fromWebSafeString(cursorString));
+		}
+	    
+	    QueryResultList<Entity> results = pq.asQueryResultList(fetchOptions);
+	    cursorString = results.getCursor().toWebSafeString();
+	    
+	    return CollectionResponse.<Entity>builder().setItems(results).setNextPageToken(cursorString).build();
+	    
+	}
     
+	@ApiMethod(name = "usersList", httpMethod = HttpMethod.GET)
+	public CollectionResponse<Entity> usersList(@Nullable @Named("next") String cursorString) {
+		                                    //@Named("name") String name,
+	    //Query q = new Query("Post").setFilter(new FilterPredicate("owner", FilterOperator.EQUAL, name));
+	    Query q = new Query("Friend");
+
+	    
+	    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+	    PreparedQuery pq = datastore.prepare(q);
+	    
+	    FetchOptions fetchOptions = FetchOptions.Builder.withLimit(30);
+	   //FetchOptions fetchOptions = FetchOptions.Builder.withDefaults();
+	    
+	    if (cursorString != null) {
+		fetchOptions.startCursor(Cursor.fromWebSafeString(cursorString));
+		}
+	    
+	    QueryResultList<Entity> results = pq.asQueryResultList(fetchOptions);
+	    cursorString = results.getCursor().toWebSafeString();
+	    
+	    return CollectionResponse.<Entity>builder().setItems(results).setNextPageToken(cursorString).build();
+	    
+	}
+	
+	
+	@ApiMethod(name = "abonneList", httpMethod = HttpMethod.GET)
+	public CollectionResponse<Entity> abonneList(@Nullable @Named("next") String cursorString) {
+		                                    //@Named("name") String name,
+	    
+		foo.UsersServlet connect = new foo.UsersServlet();
+		String user = connect.getNicknameUser();
+		Query q = new Query("Friend").setFilter(new FilterPredicate("lastName", FilterOperator.EQUAL, user));
+	    
+	    
+	    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+	    PreparedQuery pq = datastore.prepare(q);
+	    
+	    //FetchOptions fetchOptions = FetchOptions.Builder.withLimit(4);
+	    FetchOptions fetchOptions = FetchOptions.Builder.withDefaults();
+	    if (cursorString != null) {
+		fetchOptions.startCursor(Cursor.fromWebSafeString(cursorString));
+		}
+	    
+	    QueryResultList<Entity> results = pq.asQueryResultList(fetchOptions);
+	    cursorString = results.getCursor().toWebSafeString();
+	    
+	    return CollectionResponse.<Entity>builder().setItems(results).setNextPageToken(cursorString).build();
+	    
+	}
+	
+	
+	
+	@ApiMethod(name = "abonementList", httpMethod = HttpMethod.GET)
+	public CollectionResponse<Entity> abonementList(@Nullable @Named("next") String cursorString) {
+		                                    //@Named("name") String name,
+	    
+		foo.UsersServlet connect = new foo.UsersServlet();
+		String user = connect.getNicknameUser();
+		Query q = new Query("Friend").setFilter(new FilterPredicate("Followers", FilterOperator.EQUAL, user));
+	    
+	    
+	    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+	    PreparedQuery pq = datastore.prepare(q);
+	    
+	    FetchOptions fetchOptions = FetchOptions.Builder.withLimit(30);
+	    //FetchOptions fetchOptions = FetchOptions.Builder.withDefaults();
+	    if (cursorString != null) {
+		fetchOptions.startCursor(Cursor.fromWebSafeString(cursorString));
+		}
+	    
+	    QueryResultList<Entity> results = pq.asQueryResultList(fetchOptions);
+	    cursorString = results.getCursor().toWebSafeString();
+	    
+	    return CollectionResponse.<Entity>builder().setItems(results).setNextPageToken(cursorString).build();
+	    
+	}
+	
 	@ApiMethod(name = "getPost",
 		   httpMethod = ApiMethod.HttpMethod.GET)
 	public CollectionResponse<Entity> getPost(User user, @Nullable @Named("next") String cursorString)
@@ -159,22 +323,6 @@ public class ScoreEndpoint {
 		Query q = new Query("Post").
 		    setFilter(new FilterPredicate("owner", FilterOperator.EQUAL, user.getEmail()));
 
-		// Multiple projection require a composite index
-		// owner is automatically projected...
-		// q.addProjection(new PropertyProjection("body", String.class));
-		// q.addProjection(new PropertyProjection("date", java.util.Date.class));
-		// q.addProjection(new PropertyProjection("likec", Integer.class));
-		// q.addProjection(new PropertyProjection("url", String.class));
-
-		// looks like a good idea but...
-		// require a composite index
-		// - kind: Post
-		//  properties:
-		//  - name: owner
-		//  - name: date
-		//    direction: desc
-
-		// q.addSort("date", SortDirection.DESCENDING);
 
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 		PreparedQuery pq = datastore.prepare(q);
@@ -202,13 +350,9 @@ public class ScoreEndpoint {
 		e.setProperty("owner", user.getEmail());
 		e.setProperty("url", pm.url);
 		e.setProperty("body", pm.body);
-		e.setProperty("likec", 11);
+		e.setProperty("likec", 0);
 		e.setProperty("date", new Date());
 
-///		Solution pour pas projeter les listes
-//		Entity pi = new Entity("PostIndex", e.getKey());
-//		HashSet<String> rec=new HashSet<String>();
-//		pi.setProperty("receivers",rec);
 		
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 		Transaction txn = datastore.beginTransaction();

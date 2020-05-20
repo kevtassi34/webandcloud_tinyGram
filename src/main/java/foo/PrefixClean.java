@@ -52,7 +52,7 @@ public class PrefixClean extends HttpServlet {
 			response.getWriter().print("<li> deleting post instagram" + entity.getKey()+"<br>");
 		}
 		
-		response.sendRedirect("/post.jsp");
+		//response.sendRedirect("/post.jsp");
 	}
 	
 	

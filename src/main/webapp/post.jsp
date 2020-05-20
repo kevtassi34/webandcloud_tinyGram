@@ -1,4 +1,6 @@
+
 <!DOCTYPE html>
+
 <html>
 <head>
 <meta charset="UTF-8">
@@ -42,8 +44,14 @@
 	<script>	
 
 // for the example
-var me="f1"
- 
+<%-- 	//<%@foo.UsersServlet connect = new foo.UsersServlet()%> --%>
+<%-- 	//<%@ String me = connect.getNicknameUser(); %> --%>
+		
+// var me = {<jsp:useBean id="connect" scope="request" class="foo.UsersServlet" />
+<%--            <%=connect.getNicknameUser() %>}, --%>
+
+
+	
 var PostForm = {
 		url:"",
 		body:"",
@@ -54,13 +62,14 @@ var PostForm = {
 				if (url="") {url="https://dummyimage.com/320x200/000/fff&text="+Date.now()} 
 				if (body="") {body="bla bla bla \n"+Date.now()}
 		        MyPost.postMessage()
+		       
 		      }}, 
 		      [
 		    	m('div', {class:'field'},[
 		         m("label", {class:'label'},"URL"),
 		         m('div',{class:'control'}, m("input[type=text]", {
 		          class:'input is-rounded',
-		          placeholder:"Your url",
+		          placeholder:"Copiez L'URL de Votre image ici  .jpg .png",
 		             oninput: function(e) {PostForm.url = e.target.value}})),
 //		         m("img",{"src":this.url}),
 		        ]),
@@ -68,10 +77,10 @@ var PostForm = {
 		    	  m("label", {class: 'label'},"Body"),
 		          m('div',{class:'control'},m("input[type=textarea]", {
 		        class:'textarea',
-		        placeholder:"your text",
+		        placeholder:"Saisir une légende votre Post",
 		        oninput: function(e) { PostForm.body = e.target.value }})),
 		        ]),
-		      m('div',{class:'control'},m("button[type=submit]", {class:'button is-link'},"Post")),
+		      m('div',{class:'control'},m("button[type=submit]", {class:'button is-link', onclick: function(e) { MyPost.afterPost()}},"Post")),
 		    ])
 		  }
 		}
@@ -84,7 +93,7 @@ var MyPost = {
 	    loadList: function() {
 	        return m.request({
 	            method: "GET",
-	            url: "_ah/api/myApi/v1/mypost/"+me})
+	            url: "_ah/api/myApi/v1/mypost/"})
 	        .then(function(result) {
 	        	console.log("got:",result)
 	        	MyPost.list=result.items
@@ -97,7 +106,7 @@ var MyPost = {
 	    next: function() {
 	        return m.request({
 	            method: "GET",
-	            url: "_ah/api/myApi/v1/mypost/"+me+"?next="+MyPost.nextToken})
+	            url: "_ah/api/myApi/v1/mypost/"+"?next="+MyPost.nextToken})
 	        .then(function(result) {
 	        	console.log("got:",result)
 	        	result.items.map(function(item){MyPost.list.push(item)})
@@ -108,7 +117,7 @@ var MyPost = {
 	            }})
 	    },
  	    postMessage: function() {
- 			var data={'owner':me,
+ 			var data={//'owner':me,
  					'url':PostForm.url,
  					'body':PostForm.body}
  	    	console.log("post:"+data)
@@ -119,7 +128,8 @@ var MyPost = {
          	})
   	    	.then(function(result) {
      	 			console.log("got:",result)
-     	 			MyPost.loadList()
+     	 			MyPost.loadList();
+     	 			MyPost.afterPost()
          	 	})
      	},
 	    
@@ -134,13 +144,18 @@ var MyPost = {
        	 }, 
        	 
        	likePost: function(e){
-      		 var url = "/likepost/" + e
+      		 var url = "/likemypost/" + e
        		 window.location = url;
        	 },
        	 
+        	afterPost: function(e){
+        		window.location = "/paper-dashboard-master/mainActu.jsp";
+          		
+          	 },
+       	 
 }
 
-var PostView = {
+/* var PostView = {
   oninit: MyPost.loadList,
   view: function() {
    	return m('div', [
@@ -168,6 +183,7 @@ var PostView = {
                     	onclick: function(e) {
                      	MyPost.deletePost(item.key.id);
          				console.log("del:"+item.key.id)
+         				//console.log(JSON.parse(JSON.stringify(obj)));.
                     	 }
                     },"Supprimer ce post")),
                  
@@ -197,48 +213,53 @@ var PostView = {
 	   ])
 	 ])
   }
-}
+} */
 
 var Hello = {
 		
-// 	viewp : function(){
-// 	return m('nav', {class :'navbar navbar-expand-lg navbar-dark navbar-custom fixed-top'}, [
-// 		m('div', {class:'container'},[
-// 			m('a', {class:"navbar-brand", href:"#"}, "TinyGram"),
-// 			m("button", {class:"navbar-toggler"},
-// 					[
-// 						m("span", {class:"navbar-toggler-icon"})
-// 					], "bonjoour"),
-// 			m('div', {class:"collapse navbar-collapse", id:"navbarResponsive"}, [
-// 			m('ul', {class:"navbar-nav ml-auto"}, [
-// 				m('li', {class:"nav-item"}, [
-// 				   m('a', {class:"nav-link", href:"#"}, "Sing up")
-// 				   ]),
-// 			    m('li', {class:"nav-item"}, [
-// 				   m('a', {class:"nav-link", href:"#"}, "Log In")
-// 					   ]),
-// 			]),
-			
-// 			])	,	
-					
-// 			])	,
-
-// 		])
-		
-// 	},	
 	
    view: function() {
 
-   return m('div', {class:'container'}, [
+   return [m("nav", {"class":"navbar navbar-expand-lg navbar-dark navbar-custom fixed-top"}, 
+		   m("div", {"class":"container"},
+				    [
+				      m("a", {"class":"navbar-brand","href":"/paper-dashboard-master/mainActu.jsp"}, 
+				        "TinyGram"
+				      ),
+				      m("button", {"class":"navbar-toggler","type":"button","data-toggle":"collapse","data-target":"#navbarResponsive","aria-controls":"navbarResponsive","aria-expanded":"false","aria-label":"Toggle navigation"}, 
+				        m("span", {"class":"navbar-toggler-icon"})
+				      ),
+				      m("div", {"class":"collapse navbar-collapse","id":"navbarResponsive"}, 
+				        m("ul", {"class":"navbar-nav ml-auto"},
+				          [
+				            m("li", {"class":"nav-item"}, 
+				              m("a", {"class":"nav-link","href":"/userapi"}, 
+				                "Log Out"
+				              )
+				            )
+				          ]
+				        )
+				      )
+				    ]
+				  )
+				),
+  
+   m('div', {class:'container'}, [
+	       m("h1", {class: 'title'}, ' '),
+	       m("h1", {class: 'title'}, ' '),
+	       m("h1", {class: 'title'}, ' .'),
            m("h1", {class: 'title'}, 'The TinyGram post'),
            m('div',{class: 'tile is-ancestor'},[
                m("div", {class: 'tile'}, m('div',{class:'tile is-child box'},m(PostForm))),
-        	   m("div", {class: 'tile'}, m('div',{class:'tile is-child box'},m(PostView))),
+        	   //m("div", {class: 'tile'}, m('div',{class:'tile is-child box'},m(PostView))),
            ])
        ])
+       
+       
+     ]
    }
-}
 
+}
 
 m.mount(document.body, Hello)	
 

@@ -20,6 +20,7 @@
 	<servlet-mapping>
 		<servlet-name>EndpointsServlet</servlet-name>
 		<url-pattern>/_ah/api/*</url-pattern>
+		<url-pattern>/paper-dashboard-master/_ah/api/*</url-pattern>
 	</servlet-mapping>
 
 

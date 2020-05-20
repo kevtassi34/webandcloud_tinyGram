@@ -12,6 +12,10 @@
     </include>
     <include path="/**.jpg"></include>
     <include path="/**.css"></include>
+    <include path="/**.png"></include>
+    <include path="/**.woff"></include>
+    <include path="/**.ttf"></include>
+    <include path="/**.woff2"></include>
 
    </static-files>
   <system-properties>
